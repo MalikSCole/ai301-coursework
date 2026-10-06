@@ -12,9 +12,9 @@ MalikSCole
 
 **Plan comment**
 
-Not posted yet. Blocked locally: `gh` is not installed, and no authenticated GitHub posting tool is available in this environment.
+https://github.com/codepath/pathreview-ai301-fa26-s3/issues/37#issuecomment-6020285677
 
-Exact draft text intended for the issue comment:
+Exact posted text:
 
 ~~~~text
 I reproduced this by comparing `docs/API.md` with the backend definitions for the two endpoints named in the issue. The docs currently only list one-line summaries for `POST /profiles` and `POST /reviews`, while the backend shows the missing request-body details:
