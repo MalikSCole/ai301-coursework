@@ -77,11 +77,12 @@ api/schemas/review.py:15:    profile_id: UUID
 
 **Run history**
 
-Blocked: the local Claude CLI is not logged in. Running the harness produced `claude exited 1` for all packages, and a direct check returned `Not logged in · Please run /login`. No valid final eval score was generated.
+1. First full run failed because the sandboxed shell could not access the Claude CLI login state: all packages returned `claude exited 1`.
+2. Final saved run, run outside the sandbox with the authenticated Claude CLI: `agreement: 20/20 scored items  (bar: 18/20: PASS)`.
 
 **Package analysis**
 
-Blocked until a valid eval run is possible. The intended rubric has checks for the eval categories shown in `eval/gold-labels.json`, including `wrong-cause`, `scope-creep`, `unbuildable`, and `thread-convention`.
+`pkg-20` was a reject in both the gold label and my rubric's final run. The package had a bounded implementation plan, but the repo facts said Ghostty has a strict AI policy requiring all AI usage to be disclosed. The candidate plan comment did not include that disclosure, so my `comms` check rejected it for omitting a required repo-policy item.
 
 **Check rationale**
 
