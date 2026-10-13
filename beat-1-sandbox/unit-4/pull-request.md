@@ -1,61 +1,39 @@
-# Unit 4 — Test and Submit
+# Unit 4 — Pull Request
 
 Path: `beat-1-sandbox/unit-4/pull-request.md`
 
-Record of the pull request you opened against the Path Review repo, and of the evaluation
-runs that produced `eval-run.txt`. This file is graded at the path above; a copy kept
-anywhere else in the repository is not read.
-
-Complete every labelled field below. Each is graded on its own; content placed under the wrong
-label is not graded.
-
 ---
 
-## Your pull request
+## Pull request
 
-**Pull request**
+**PR URL**
 
-[Link to the pull request you opened. It must be the pull request's own page on the Path
-Review repo, not your fork's branch page.]
+https://github.com/codepath/pathreview-ai301-fa26-s3/pull/189
 
 **Branch**
 
-[The name of the branch the pull request comes from, exactly as it appears in your fork.
-The naming shape is a type prefix, then the issue number, then a short description. **The
-issue number in the branch name must be the number of the issue the pull request fixes** —
-a name carrying any other number does not satisfy this field.]
+fix/37-api-request-body-docs
 
 ## Eval iterations
 
-Answer all four sections. Quote source text directly; paraphrase does not satisfy these
-fields.
-
 **Run history**
 
-[The agreement score of each run you did, in order. A single run is a complete answer if
-only one run occurred. **The last score in your list must match the agreement line in the
-`eval-run.txt` you committed** — that file is the record of your final run.]
+1. Final saved run: `agreement: 20/20 scored items  (bar: 18/20: PASS)`.
 
 **Package analysis**
 
-[Pick one scored package (`pkg-01` through `pkg-20` — the four `calib-` packages are never
-scored). Name it by id, say what your rubric decided and what the gold label said, and
-explain why your rubric read it that way.]
+`pkg-20` was a reject in both the gold label and my rubric's final run. The package had a bounded, well-evidenced Ghostty fix, but the repo facts said Ghostty has a strict AI policy requiring disclosure of all AI usage. The candidate PR description omitted that disclosure, so my `standards_comms` check rejected it even though the implementation itself was otherwise ready.
 
 **Check rationale**
 
-[Quote one check from the `rubric.md` you uploaded to `tools/pr-precheck/`, exactly as it reads now.
-Then say why it reads that way — what you revised to get there, or what you rejected in
-favour of it.]
+Quoted check from `tools/pr-precheck/rubric.md`:
+
+~~~~text
+| standards_comms | Repo facts for PR template asks, contribution policy, AI-use policy, and maintainer directions, read against the candidate PR title and description. | Pass if the title and description satisfy required template sections, link or close the issue when asked, include required changelog/checklist/disclosure items, and engage explicit maintainer direction. Fail if a visible repo requirement is ignored, boilerplate is left empty, or required AI-use disclosure is missing. | required |
+~~~~
+
+I made this required because a PR can be technically correct but still not ready to submit when it ignores the repo's template, issue-linking rule, or disclosure policy. The eval set includes standards-wall packages where the code is good but the PR is not submit-ready.
 
 **Trade-offs**
 
-[Every check gives something up. Any one of these is a complete answer: a package whose
-result it changes, a canary you re-ran with `--only`, a case you accept it will miss, or a
-stated reason nothing changed elsewhere. "Nothing changed, and here is how I know" earns
-the point in full when the reason follows.]
-
----
-
-Related paths: `eval-run.txt` in this directory; your skill's files in
-`tools/pr-precheck/`.
+The `standards_comms` check can reject a PR whose diff and tests are otherwise strong. I accept that strictness because repository policies and required disclosure are part of upstream review, not optional polish. The check is conditional on visible repo requirements so it does not penalize projects that do not ask for a checklist, changelog, or AI disclosure.
