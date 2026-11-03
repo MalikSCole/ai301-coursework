@@ -65,7 +65,7 @@ one in the week it belongs to.
 
 **Unit 7: Planning started; implementation and ship-gate work pending**
 
-2026-11-03: I drafted the bounded Coverage read/search test plan after the Unit 6 package passed. No new API tests or product fixes have been written; plan-check review and the Unit 7 ship-gate work are still pending.
+2026-11-03: I drafted the bounded Coverage read/search test plan after the Unit 6 package passed. No new API tests or product fixes have been written; plan-check accepted the concrete eight-case plan; ship-gate is installed, both hooks stopped the wiring test, and pristine-code baselines are being recorded before implementation.
 
 **Unit 8: [one line on the tool work]**
 
@@ -327,24 +327,48 @@ Next is Unit 7 planning: decide new test class versus extension, fixture seeding
 
 **Analysis**
 
-Initial Unit 7 planning only: the gap is missing HTTP search/read cases on the Coverage resource. Existing write tests do not exercise the legacy GET controller path. No runtime endpoint root cause or product bug is claimed.
+Issue #12343 invites one-resource API-test contributions. My claimed scope is GET /fhir/Coverage and GET /fhir/Coverage/:uuid only. At commit 33050754bd9248137f2eef0db00c4b2d4847c73c, routes exist at apis/routes/_rest_routes_fhir_r4_us_core_3_1_0.inc.php:312-332 and call FhirCoverageRestController::getAll/getOne. CoverageFhirWriteApiTest calls only POST/PUT; ApiTestClient scope declarations do not execute GETs. Thus the contribution gap is missing dedicated HTTP regression tests, not a diagnosed product defect. The Unit 6 full reproduction package accepted all six required checks.
+
+Before evidence (real Docker/database/OAuth run):
+
+```text
+Coverage Fhir Write Api
+  Post creates coverage
+  Put updates coverage
+  Post without beneficiary returns error
+OK (3 tests, 55 assertions)
+```
+
+The source cross-check found only CoverageFhirWriteApiTest's /apis/default/fhir/Coverage constant and ApiTestClient's Coverage.read/write scope declarations. PHPUnit --list-tests printed only the three write methods, then exited 70 on the extension's missing shutdown event; that inventory is not claimed as a passing test. No measured line/branch coverage percentage is asserted. The full rerunnable report is ~/ai301-unit6-starter/repro-draft.md; this plan quotes the decisive evidence rather than relying on an unseen file.
 
 **Proposed Solution**
 
-Plan a new `tests/Tests/Api/CoverageFhirApiTest.php` using the Coverage write test's existing synthetic patient/insurer setup and HTTP POST seeding, then the Condition read/search assertion pattern. Keep work test-only; do not expand into product fixes, other resources, shared fixture infrastructure or inventory maintenance. Confirm Coverage-specific error/body details before pinning expectations copied from another resource.
+Add one file: tests/Tests/Api/CoverageFhirApiTest.php. Use real HTTP via ApiTestClient and synthetic fixtures, following CoverageFhirWriteApiTest's working setup/defensive cleanup and ConditionFhirApiTest's read/search matrix, with PatientFhirApiTest as a second reference. Use strict_types=1, native types and the current AGENTS.md standards rather than copying legacy untyped patterns.
+
+Decided fixture strategy: in setUp, create an authenticated ApiTestClient using setAuthTokenOrFail, install patient fixtures and capture the patient's UUID, install an insurance company fixture, load coverage.json[0], substitute beneficiary and payor references, remove id, POST through the existing write route and assert 201 before capturing its returned UUID. Use typed properties for the client, FixtureManager and captured UUIDs. POST is setup only; no new write-feature assertions or production changes are part of this PR. Existing write baseline already verifies that path.
+
+Teardown handles partially initialized setup, removes Coverage before patient/insurer, and uses try/finally so OAuth client removal still runs if token revocation throws. Reuse current FixtureManager helpers; do not change fixture infrastructure. Run tests serially because existing cleanup uses shared synthetic prefixes. New helper methods in the test narrow decoded JSON with assertions, centralize canonical resource-reference checks and OAuth-denial assertions, and avoid unreviewed casts or suppression annotations.
+
+Scope boundaries: exactly the two GET operations, on the default authorized user path plus unauthenticated denial. No patient-compartment isolation matrix, extra search-parameter matrix, product/controller/service fixes, schema changes, other resources, inventory refresh, or broad refactor. If a product defect blocks a planned case, capture it and record a plan deviation before deciding how to proceed; do not silently change production code or weaken assertions to hide it.
 
 **Implementation Plan**
 
-1. Review the [initial Unit 7 plan](coverage-read-plan.md) with plan-check before editing application/test files.
-2. Decide and verify the minimal search/read/error matrix and synthetic-fixture cleanup strategy on the pinned branch.
-3. Implement only after that planning checkpoint, then run targeted checks and the repository's required validation; no implementation has begun.
+1. After plan-check accepts, create CoverageFhirApiTest.php with the project header, strict types, namespace, typed properties, fixture/auth setup and defensive teardown described above. No other code file is planned.
+2. Add eight tests: patient-filtered search, _id-filtered search, read-one, empty search, malformed read UUID, absent read UUID, unauthenticated search and unauthenticated read.
+3. Success assertions: HTTP 200, Bundle/collection shape for search, membership of the captured Coverage UUID, exact resourceType/id, beneficiary.reference == Patient/<captured patient UUID>, payor[0].reference == Organization/<captured insurer UUID>, and fixture subscriberId. _id search must return exactly one matching entry. Do not depend on arbitrary DB row order.
+4. Empty search uses a valid absent UUID: expect HTTP 200 with Bundle/collection, total 0, no entries. Malformed read expects 400 with validationErrors. Valid absent read expects 404 and empty JSON array. These error contracts are grounded in the route annotations, shared RestControllerHelper and Condition/Patient tests; verify Coverage-specific behavior during the first focused run and record any difference rather than claiming it is already observed.
+5. Unauthenticated clients deliberately skip token setup. Both GETs must return 401 with an OAuth error/message denial body (not a FHIR resource, 404 route miss or 500).
+6. Run the new class alone first, then both Coverage classes to prove existing writes remain green and cleanup permits serial reuse. Inspect the before/after source inventory: the new GET/getOne calls must now be present and discovered, with no skipped/zero-test success.
+7. Run every must-pass ship-manifest command, record exact outputs, and investigate any failure. An unchanged-code baseline failure is documented separately only after matching evidence; changed-test failures are fixed.
+8. Review the single-file diff and local-file exclusions. Use Conventional Commit title and accurate Generated-By/Assisted-By trailers for actual tools. Draft the upstream template, use Refs #12343 to avoid closing the umbrella, and explain that relationship choice in course notes. Commit only the test file, run ship-gate on the committed branch and exact PR text, then push/open the upstream PR after PASS.
+
 
 **Toolkit**
 
-- Tool: scoped orientation and an initial written Unit 7 plan; plan-check review pending.
-- What it produced: a bounded proposed test class, fixture approach, response assertions to verify, and command/outcome matrix.
-- Difficulties: exact Coverage error bodies and patient-context depth still need a planning decision; templates must not be copied uncritically.
-- What changed: recorded these uncertainties before implementation and corrected plan-check's stale classroom-only procedure step to defer to its installed real-repository scope.
+- Tool: scoped orientation, ship manifest and plan-check (accepted all six required checks).
+- What it produced: a concrete single-file plan, fixture strategy, eight-case HTTP matrix and local plan-comment draft.
+- Difficulties: the full tracking issue is larger than my slice; error contracts must be verified for Coverage specifically; initial gate install needed worktree-aware excludes.
+- What changed: bounded the implementation to the two GET routes, kept local planning files excluded, and backed up/corrected obsolete sandbox/default-base assumptions without changing rubric criteria. Plan-check accepted all six checks; its reported missing voice guide was a symlink-read issue (the canonical guide exists), so I added a direct canonical voice check. The plan comment remains private.
 
 ---
 
