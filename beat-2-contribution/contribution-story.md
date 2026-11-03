@@ -241,7 +241,7 @@ stdout | __tests__/unit/components/sections/issue-2871-repro.test.tsx > issue 28
 - Tool: repro-check in full-package live mode, plus scoped dashboard orientation and Vitest/Testing Library/jsdom probes.
 - What it produced: a complete claim/reproduction draft with pinned source, environment, runnable fixture, output, nonempty/loading controls, and a limited cannot-reproduce conclusion. Full-package repro-check accepted all six required checks, with no voice-guide violations; it accepted an evidenced cannot-reproduce result, not a confirmed bug.
 - Difficulties: the earlier scout read an unconditional headerActions prop as proof of visible behavior and missed the parent gate. A full browser/cluster run was not performed, so I cannot generalize beyond the component boundary.
-- What changed: traced the complete render path, checked runtime behavior, recorded the environment difference explicitly, and requested a post-reproduction scout re-grade. I did not turn the loading edge into an unverified reproduction claim or implement an unrelated fix. The post-reproduction scout rejects #2871 as originally reported; a maintainer follow-up draft is prepared locally and has not been posted.
+- What changed: traced the complete render path, checked runtime behavior, recorded the environment difference explicitly, and requested a post-reproduction scout re-grade. I did not turn the loading edge into an unverified reproduction claim or implement an unrelated fix. The post-reproduction scout rejects #2871 as originally reported; I posted an [evidence-backed maintainer follow-up](https://github.com/mckinsey/agents-at-scale-ark/issues/2871#issuecomment-6614854554) asking whether a deployed-version or loading/error case remains. The voice guard logged a pass; maintainer clarification is pending.
 
 ---
 
@@ -295,14 +295,14 @@ observable named is not a strategy.]
 
 **2026-11-03**
 
-Completed Unit 5 scout setup, broad scan, review notes, two finalist grades, and the Unit 6 scope/voice-guard upgrades. Posted the accepted claim through Claude Code after the guard passed, forked/cloned Ark, installed its pre-commit hook, and created local repository memory from scoped orientation. No application code has changed. The baseline component tests passed (24/24); the local copied probe passed (10/10, including 3 added controls) and did not reproduce the settled-empty issue at the tested commit. Repro-check accepted the complete cannot-reproduce package; the scout's updated availability verdict rejects the issue as originally described. I prepared a follow-up question rather than inventing a fix or expanding into the loading/error edge without maintainer direction.
+Completed Unit 5 scout setup, broad scan, review notes, two finalist grades, and the Unit 6 scope/voice-guard upgrades. Posted the accepted claim through Claude Code after the guard passed, forked/cloned Ark, installed its pre-commit hook, and created local repository memory from scoped orientation. No application code has changed. The baseline component tests passed (24/24); the local copied probe passed (10/10, including 3 added controls) and did not reproduce the settled-empty issue at the tested commit. Repro-check accepted the complete cannot-reproduce package; the scout's updated availability verdict rejects the issue as originally described. After user approval, I posted the [maintainer follow-up](https://github.com/mckinsey/agents-at-scale-ark/issues/2871#issuecomment-6614854554) with the bounded component findings and a question about remaining scope. The voice guard logged a pass. Maintainer clarification is pending.
 
 **Toolkit**
 
 - Tool: issue-scout, voice guard, repro-check, scoped repository memory, and Vitest.
 - What it produced: a traceable setup/claim/reproduction trail and a corrected issue-selection decision.
 - Difficulties: a source-only scout inference missed shared parent rendering; the runtime attempt corrected it.
-- What changed: held implementation, saved the superseding rejection and bounded cannot-reproduce evidence, and drafted a maintainer clarification.
+- What changed: held implementation, saved the superseding rejection and bounded cannot-reproduce evidence, and posted the approved maintainer clarification through the voice guard.
 
 ---
 
