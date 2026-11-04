@@ -426,32 +426,52 @@ Added only tests/Tests/Api/CoverageFhirApiTest.php with the planned eight HTTP c
 
 #### Short description of what this changes or resolves:
 
-Adds real-OAuth HTTP regression tests for `GET /fhir/Coverage` and `GET /fhir/Coverage/:uuid`, following the per-resource API test pattern. The existing Coverage API class covers writes; this adds focused search/read coverage without changing production behavior.
+This adds HTTP regression tests for `GET /fhir/Coverage` and `GET /fhir/Coverage/:uuid` using the existing real-OAuth API test pattern. The current Coverage API tests already cover writes, so this PR adds search and read coverage without changing any production behavior.
 
-Refs #12343. This addresses only the Coverage read slice and leaves the umbrella inventory open, following the relationship used by earlier resource-test PRs such as #12808.
+Refs [[#12343](https://github.com/openemr/openemr/issues/12343)]. This only covers the Coverage read portion of that larger issue and leaves the rest of the inventory open, similar to earlier resource test PRs like [[#12808](https://github.com/openemr/openemr/pull/12808)].
 
 #### Changes proposed in this pull request:
 
-- Add `tests/Tests/Api/CoverageFhirApiTest.php` with eight tests: patient-filtered search, `_id` search, read by UUID, empty search, malformed/unknown UUID errors, and unauthenticated search/read.
-- Assert status codes and response bodies, including seeded resource identity, canonical beneficiary/payor references, subscriber ID, and OAuth denial rather than routing errors.
-- Reuse the patient/insurer/Coverage fixtures and HTTP POST only for setup, with defensive fixture and OAuth-client cleanup.
+- Adds `tests/Tests/Api/CoverageFhirApiTest.php` with eight tests covering patient-filtered search, `_id` search, read by UUID, empty search, malformed and unknown UUID errors, and unauthenticated search/read.
+- Checks the returned status codes and response data, including the seeded resource ID, beneficiary/payor references, subscriber ID, and OAuth denial responses.
+- Reuses the existing patient, insurer, and Coverage fixtures, with HTTP POST used only for setup.
+- Adds cleanup for the created fixtures and OAuth client.
 
-**Fixture adjustment found during implementation:** the insurer helper creates ID 0 in this environment. The Coverage GET service filters an empty provider, so the first seeded read returned 404 and searches were empty despite POST succeeding. Setup now assigns only that synthetic insurer a free positive ID when its ID is 0, before POST. The shared fixture helper, controllers, services and route tables are unchanged.
+While implementing the tests, I ran into an issue with the existing insurer fixture. In my environment, the helper creates an insurer with ID `0`, and the Coverage GET path filters records with an empty provider. Because of that, the POST setup succeeded but the first read returned `404` and searches came back empty.
 
-**Verification** (OpenEMR 8.6.0-dev at base `33050754`, Docker/PHP 8.5.12, PHPUnit 11.5.57, MariaDB 12.3.3):
+To keep this PR limited to tests, the setup only assigns the synthetic insurer a free positive ID when its ID is `0` before creating the Coverage resource. I did not change the shared fixture helper, controllers, services, or route tables.
 
-- Before: only Coverage write cases — `OK (3 tests, 55 assertions)`.
-- New read class: `OK (8 tests, 234 assertions)`.
-- Combined Coverage classes: `OK (11 tests, 289 assertions)`, run serially after the focused class to exercise cleanup/reuse.
-- Coverage PHP_CodeSniffer and full-codebase PHPStan pass.
-- Full API comparison: before 729 tests / 9765 assertions; after 737 tests / 10006 assertions. Both report the same 1 failure, 1 warning and 4 skips. The failure is `ClientGrantTypeEnforcementTest.php:215` (client-credentials request returns 400 invalid_client rather than 200); the warning is `ApiTestClient.php:315` (undefined refresh_token). The new Coverage cases pass in the full run. No unrelated production fix is included.
+**Verification**
 
-Commands: `vendor/bin/phpunit --testsuite api --filter CoverageFhirApiTest --testdox`, `--filter CoverageFhir` for both classes, `composer phpcs -- tests/Tests/Api/CoverageFhir*ApiTest.php`, and full-codebase PHPStan, all inside the documented development container. The `api-test` helper returned exit 0 even though the baseline reported FAILURES; the after-run used the equivalent underlying PHPUnit command and returned exit 1. The full suite is not claimed green.
+Environment: OpenEMR 8.6.0-dev at base `33050754`, Docker/PHP 8.5.12, PHPUnit 11.5.57, MariaDB 12.3.3.
+
+- Before: existing Coverage write tests passed with `3 tests, 55 assertions`.
+- New Coverage read tests pass with `8 tests, 234 assertions`.
+- Both Coverage test classes pass together with `11 tests, 289 assertions`.
+- Coverage PHP_CodeSniffer checks pass.
+- Full-codebase PHPStan passes.
+- Full API suite before: `729 tests, 9765 assertions`.
+- Full API suite after: `737 tests, 10006 assertions`.
+
+The full API suite reports the same existing failure, warning, and four skips before and after this change. The failure is in `ClientGrantTypeEnforcementTest.php:215`, where a client-credentials request returns `400 invalid_client` instead of `200`. The warning is in `ApiTestClient.php:315` for an undefined `refresh_token`.
+
+The new Coverage tests pass during the full run, and I did not include any unrelated production fixes in this PR.
+
+Commands used included:
+
+`vendor/bin/phpunit --testsuite api --filter CoverageFhirApiTest --testdox`
+
+`vendor/bin/phpunit --testsuite api --filter CoverageFhir`
+
+`composer phpcs -- tests/Tests/Api/CoverageFhir*ApiTest.php`
+
+and the full-codebase PHPStan check, all inside the documented development container.
+
+One thing I noticed during verification is that the `api-test` helper returned exit code `0` even though the baseline reported failures, so I used the underlying PHPUnit command for the after-run to get the actual failing exit code. I am not claiming the full API suite is green.
 
 #### Was an AI assistant used? Yes / No
 
-Yes. Codex generated the test class and helped trace the fixture behavior; Claude Code assisted with plan/readiness review. The commands and results above were checked locally. Commit trailers record the AI involvement.
-
+Yes. I used Codex to help generate the test class and trace the fixture behavior, and Claude Code for plan and readiness review. I reviewed the changes, ran the commands locally, and verified the results myself. The commit trailers also record the AI assistance.
 
 </details>
 
