@@ -12,7 +12,7 @@ files and no evidence uploads are part of Assignment 5.
 **GitHub Username:** MalikSCole
 **Issue:** https://github.com/openemr/openemr/issues/12343
 **Claimed slice:** `GET /fhir/Coverage` and `GET /fhir/Coverage/:uuid` only.
-**Pull Request:** [GitHub PR link, once opened]
+**Pull Request:** https://github.com/openemr/openemr/pull/15022
 
 One repository, built across units 5 to 8, telling the whole story of your real
 contribution. Fill it as you work, not at the end — the sections below ask for evidence that
@@ -63,9 +63,9 @@ one in the week it belongs to.
 
 2026-11-03: I installed the voice guard, canonical claims/questions/pings rules, real-repository scopes, and the scope-feasible rubric patch; the wiring block and actual claim passes are logged. After Ark #2871's component attempt could not reproduce the settled-empty issue, I investigated alternatives and claimed only OpenEMR #12343's two Coverage GET endpoints after the scout accepted the slice as moderate. I created my fork, configured origin/upstream, used the project's managed Docker worktree and hooks, and filled an ignored CLAUDE.local.md under 60 lines from scoped orientation. Repro-check accepted all six checks for the coverage-gap report; I recorded the listing command's shutdown error honestly and corrected a stale Path Review-only step in plan-check's procedure before starting planning.
 
-**Unit 7: Planning started; implementation and ship-gate work pending**
+**Unit 7: Shipped the scoped Coverage GET tests through the manifest and gate**
 
-2026-11-03: I drafted the bounded Coverage read/search test plan after the Unit 6 package passed. No new API tests or product fixes have been written; plan-check accepted the concrete eight-case plan; ship-gate is installed, both hooks stopped the wiring test, and pristine-code baselines are being recorded before implementation.
+2026-11-03: I installed ship-gate, verified both hook stops, and wrote a manifest with three sourced must-pass checks plus the dated unrelated full-API baseline failure. Plan-check accepted both the initial plan and its recorded fixture adjustment; the final single-file commit b0b0ca4 passed repository hooks, all active manifest checks, and all four pr-precheck criteria, and [PR #15022](https://github.com/openemr/openemr/pull/15022) is open upstream. The main obstacles were the installer's .git-directory assumption, an insurer fixture with ID 0, and a helper returning 0 despite suite failures; I resolved local excludes through Git, normalized only the test insurer, and preserved the real full-suite outcomes without production changes. The manifest kept targeted tests/style/full static analysis decisive while making the existing OAuth failure visible; I used Refs #12343 following prior PRs so the umbrella remains open, and the hook reran fresh because its issue inference does not recognize Refs for the manual-pass cache.
 
 **Unit 8: [one line on the tool work]**
 
@@ -345,7 +345,7 @@ The source cross-check found only CoverageFhirWriteApiTest's /apis/default/fhir/
 
 Add one file: tests/Tests/Api/CoverageFhirApiTest.php. Use real HTTP via ApiTestClient and synthetic fixtures, following CoverageFhirWriteApiTest's working setup/defensive cleanup and ConditionFhirApiTest's read/search matrix, with PatientFhirApiTest as a second reference. Use strict_types=1, native types and the current AGENTS.md standards rather than copying legacy untyped patterns.
 
-Decided fixture strategy: in setUp, create an authenticated ApiTestClient using setAuthTokenOrFail, install patient fixtures and capture the patient's UUID, install an insurance company fixture, load coverage.json[0], substitute beneficiary and payor references, remove id, POST through the existing write route and assert 201 before capturing its returned UUID. Use typed properties for the client, FixtureManager and captured UUIDs. POST is setup only; no new write-feature assertions or production changes are part of this PR. Existing write baseline already verifies that path.
+Decided fixture strategy: in setUp, create an authenticated ApiTestClient using setAuthTokenOrFail, install patient fixtures and capture the patient's UUID, install an insurance company fixture, normalize that synthetic insurer to a free positive ID if the helper inserted ID 0, load coverage.json[0], substitute beneficiary and payor references, remove id, POST through the existing write route and assert 201 before capturing its returned UUID. For positive-ID normalization, query COALESCE(MAX(id), 0) + 1, assert that result is numeric, and update only the newly created insurer UUID where id = 0 before POSTing Coverage. This reflects the read path's nonempty-provider precondition without changing product code or FixtureManager. Use typed properties for the client, FixtureManager and captured UUIDs. POST is setup only; no new write-feature assertions or production changes are part of this PR. Existing write baseline already verifies that path.
 
 Teardown handles partially initialized setup, removes Coverage before patient/insurer, and uses try/finally so OAuth client removal still runs if token revocation throws. Reuse current FixtureManager helpers; do not change fixture infrastructure. Run tests serially because existing cleanup uses shared synthetic prefixes. New helper methods in the test narrow decoded JSON with assertions, centralize canonical resource-reference checks and OAuth-denial assertions, and avoid unreviewed casts or suppression annotations.
 
@@ -363,68 +363,111 @@ Scope boundaries: exactly the two GET operations, on the default authorized user
 8. Review the single-file diff and local-file exclusions. Use Conventional Commit title and accurate Generated-By/Assisted-By trailers for actual tools. Draft the upstream template, use Refs #12343 to avoid closing the umbrella, and explain that relationship choice in course notes. Commit only the test file, run ship-gate on the committed branch and exact PR text, then push/open the upstream PR after PASS.
 
 
+**Recorded deviations (2026-11-03)**
+
+- The helper seeded insurer ID 0; Coverage filters an empty provider, so initial success cases failed. A PHPUnit diagnostic confirmed provider 0 and empty/404 reads. The accepted revised plan assigns only that synthetic insurer a free positive ID in the new test, without changing FixtureManager or product code. After correction, all eight cases pass (234 assertions).
+- The baseline API helper returned 0 while reporting one pre-existing OAuth failure, a refresh_token warning and four skips. The after-run used underlying PHPUnit for an honest exit code and reproduced the same failure/warning/skip signatures. The manifest preserves this dated exception; it does not claim the full suite green.
+
 **Toolkit**
 
-- Tool: scoped orientation, ship manifest and plan-check (accepted all six required checks).
-- What it produced: a concrete single-file plan, fixture strategy, eight-case HTTP matrix and local plan-comment draft.
-- Difficulties: the full tracking issue is larger than my slice; error contracts must be verified for Coverage specifically; initial gate install needed worktree-aware excludes.
-- What changed: bounded the implementation to the two GET routes, kept local planning files excluded, and backed up/corrected obsolete sandbox/default-base assumptions without changing rubric criteria. Plan-check accepted all six checks; its reported missing voice guide was a symlink-read issue (the canonical guide exists), so I added a direct canonical voice check. The plan comment remains private.
+- Tool: plan-check, sourced ship manifest and scoped fixture diagnostics.
+- What it produced: initial and revised plan-check accept results (all six checks), a private plan-comment draft, and an executable one-file plan.
+- Difficulties: passing writes did not prove the zero-ID insurer was readable; the broad helper masked the test failure exit; the staff installer assumed .git was a directory.
+- What changed: documented the positive-ID fixture adjustment and verification-command change, used the resolved common Git exclude path, and backed up/corrected stale sandbox/default-base instructions without changing rubric criteria. The PR draft discloses both deviations; plan-comment.md remains unposted.
 
 ---
 
 ## Testing Strategy
 
-Planned checks are documented in [coverage-read-plan.md](coverage-read-plan.md). The proposed new tests will assert seeded search membership and canonical resource references, exact read-by-UUID identity, empty search behavior, malformed/unknown UUID handling, and unauthenticated denial for the two endpoints. Those proposed checks have not been implemented or run.
+The new CoverageFhirApiTest drives real OAuth/HTTP against the two claimed GET routes using a deterministic synthetic Coverage, patient and insurer. It checks patient-filtered and _id search membership, exact read identity and canonical references, subscriber ID, empty search, malformed versus absent UUID, and authenticated versus unauthenticated behavior. These assertions distinguish meaningful API results from route misses, server errors or a body that merely exists; POST is used only to seed the read fixture.
 
-Observed Unit 6 baseline only: the existing Coverage write tests pass (3 tests, 55 assertions), and application/database/OAuth readiness passes. The full API suite, new GET tests and CI matrix remain future validation work.
+Observed before: only the Coverage write class (3 tests, 55 assertions), with no dedicated GET call sites. Observed after: the new class passes **8 tests / 234 assertions**; a consecutive combined run passes **11 tests / 289 assertions**, including all pre-existing writes, exercising cleanup/reuse. Coverage PHP_CodeSniffer passes, and full-codebase PHPStan with staged final source passes; I confirmed the new file appears in the analysis cache rather than assuming an untracked file was checked.
+
+Full API comparison: untouched base **729 tests / 9765 assertions**, after **737 tests / 10006 assertions**. Both report the same **1 failure, 1 warning, 4 skips**. The failure is ClientGrantTypeEnforcementTest.php:215 (client-credentials request 400 invalid_client vs expected 200); the warning is ApiTestClient.php:315, undefined refresh_token, triggered by 9 public-client/introspection cases. This is explicitly a pre-existing suite problem, not a green full suite, and it is retained with a dated reason in ship-manifest.md. The after-run used direct PHPUnit through the managed helper and exited 1; the baseline api-test helper returned 0 despite FAILURES. Full raw logs are retained locally; test_evidence.md contains before, after and command/result excerpts.
+
+The environment is the pinned Docker/PHP 8.5.12/MariaDB 12.3.3 setup. Other PHP/database/CI combinations, patient-compartment isolation and exhaustive search-parameter matrices are not claimed tested. No production fix, shared fixture change or extra resource was bundled into the test contribution.
 
 **Toolkit**
 
-- Tool: PHPUnit and the existing ApiTestClient; future checks remain planned.
-- What it produced: a real baseline and an explicit separation between completed checks and intended regression coverage.
-- Difficulties: error shapes must be confirmed for Coverage rather than assumed from FHIR conventions.
-- What changed: tied proposed assertions to the exact claimed routes and kept broad conformance/product changes outside the plan.
+- Tool: PHPUnit/ApiTestClient, PHP_CodeSniffer, full PHPStan, ship-manifest baselines and before/after test_evidence.md.
+- What it produced: passing new and combined Coverage runs, source-level GET coverage evidence, and an honest full-suite baseline comparison.
+- Difficulties: initial success cases exposed a zero-ID seed; the suite helper masked exit failure; untracked-file cache inclusion needed explicit verification.
+- What changed: corrected only the local fixture setup after re-grading the deviation, ran the underlying full-suite command, confirmed staged-file analysis, and preserved unrelated failures instead of claiming full green or expanding scope.
 
 ---
 
 ## Implementation Notes
 
-**2026-11-03**
+**2026-11-03 — Unit 6 and planning**
 
-Earlier Ark #2871 investigation is preserved in coursework history through commit `f41ddfa`; its settled-empty symptom could not be reproduced at the component boundary, and I posted a clarification rather than inventing a fix. The active contribution is now OpenEMR #12343's two Coverage GET routes, claimed at https://github.com/openemr/openemr/issues/12343#issuecomment-6615689727. I completed the fork/remotes, managed branch and Docker baseline, local memory, scoped pattern comparison and accepted full claim/reproduction grade. I started a written Unit 7 plan after that accept. No new application or test code has changed, and no OpenEMR contribution commits or PR exist yet.
+Earlier Ark #2871 evidence remains in coursework history through f41ddfa; I posted its limited cannot-reproduce findings and selected the scoped OpenEMR Coverage GET task. The claim, fork/remotes, managed branch/stack, local memory and full repro-check package were completed before implementation. I installed ship-gate, verified both hooks stopped the help command, sourced and baselined the manifest, and pushed the accepted plan checkpoint as 25d0881.
+
+**2026-11-03 — Implementation and observed deviation**
+
+Added only tests/Tests/Api/CoverageFhirApiTest.php with the planned eight HTTP cases. The first run had three success-case failures while five error/auth cases passed. A temporary diagnostic through the normal PHPUnit safety path showed the insurer helper used ID 0, which the Coverage GET service filters as empty; I updated the plan and story and obtained another six-check accept before applying test-local positive-ID normalization. No controller/service/shared-helper fix was made, and temporary diagnostic files were removed. The final new and combined tests, style and definitive staged-file full PHPStan pass. The full API after-run matches the pre-existing OAuth failure/warning/skips. All applicable repository hooks passed; commit b0b0ca4 contains only the new test class with Generated-By: Codex and Assisted-By: Claude Code trailers. Manual ship-gate and the actual PR hook both passed, and PR #15022 is open against openemr/openemr master from my fork. The hook reran checks instead of honoring the manual stamp because Refs does not match its issue-reference inference; the manual run explicitly supplied the issue URL, and no gate was bypassed.
 
 **Toolkit**
 
-- Tool: issue-scout, voice guard, repro-check, managed Docker worktrees and local repository memory.
-- What it produced: an available scoped claim, working baseline, accepted coverage-gap evidence, and initial planning document.
-- Difficulties: stale checklists and prior shallow source judgments required source/runtime checks; listing mode has a shutdown limitation.
-- What changed: selected the bounded Coverage slice, preserved the earlier attempt, recorded exact proof and limitations, and kept implementation behind the planning checkpoint.
+- Tool: plan-check, managed Docker tests, scoped diagnostics, local ship-gate and repository hooks.
+- What it produced: a single-file implementation aligned with the accepted revised plan and reproducible before/after evidence.
+- Difficulties: staff installer worktree path, zero-ID fixture, masked helper exit, and pre-existing unrelated suite failures.
+- What changed: completed exclusions via Git's resolved path, recorded/re-graded deviations, used accurate test commands, and kept local working files outside the diff.
 
 ---
 
 ## Pull Request
 
-**PR Link:** [GitHub PR URL when opened]
+**PR Link:** https://github.com/openemr/openemr/pull/15022
 
-**PR Description:** [what the PR says; much of the content above
-adapts into it]
+**PR Description:** `test(api): add FHIR Coverage read endpoint tests`. Adds one CoverageFhirApiTest with eight real-OAuth HTTP search/read/error/auth cases and defensive cleanup. The description discloses the test-local positive-insurer-ID adjustment, passing new/combined/style/static checks, unchanged full-suite OAuth failure/warning/skips, and AI involvement. It uses `Refs #12343` rather than a closing keyword, matching earlier single-resource PRs and leaving the umbrella inventory open; repository context takes precedence over the course's generic Fixes wording.
+
+<details>
+<summary>Submitted PR description</summary>
+
+#### Short description of what this changes or resolves:
+
+Adds real-OAuth HTTP regression tests for `GET /fhir/Coverage` and `GET /fhir/Coverage/:uuid`, following the per-resource API test pattern. The existing Coverage API class covers writes; this adds focused search/read coverage without changing production behavior.
+
+Refs #12343. This addresses only the Coverage read slice and leaves the umbrella inventory open, following the relationship used by earlier resource-test PRs such as #12808.
+
+#### Changes proposed in this pull request:
+
+- Add `tests/Tests/Api/CoverageFhirApiTest.php` with eight tests: patient-filtered search, `_id` search, read by UUID, empty search, malformed/unknown UUID errors, and unauthenticated search/read.
+- Assert status codes and response bodies, including seeded resource identity, canonical beneficiary/payor references, subscriber ID, and OAuth denial rather than routing errors.
+- Reuse the patient/insurer/Coverage fixtures and HTTP POST only for setup, with defensive fixture and OAuth-client cleanup.
+
+**Fixture adjustment found during implementation:** the insurer helper creates ID 0 in this environment. The Coverage GET service filters an empty provider, so the first seeded read returned 404 and searches were empty despite POST succeeding. Setup now assigns only that synthetic insurer a free positive ID when its ID is 0, before POST. The shared fixture helper, controllers, services and route tables are unchanged.
+
+**Verification** (OpenEMR 8.6.0-dev at base `33050754`, Docker/PHP 8.5.12, PHPUnit 11.5.57, MariaDB 12.3.3):
+
+- Before: only Coverage write cases — `OK (3 tests, 55 assertions)`.
+- New read class: `OK (8 tests, 234 assertions)`.
+- Combined Coverage classes: `OK (11 tests, 289 assertions)`, run serially after the focused class to exercise cleanup/reuse.
+- Coverage PHP_CodeSniffer and full-codebase PHPStan pass.
+- Full API comparison: before 729 tests / 9765 assertions; after 737 tests / 10006 assertions. Both report the same 1 failure, 1 warning and 4 skips. The failure is `ClientGrantTypeEnforcementTest.php:215` (client-credentials request returns 400 invalid_client rather than 200); the warning is `ApiTestClient.php:315` (undefined refresh_token). The new Coverage cases pass in the full run. No unrelated production fix is included.
+
+Commands: `vendor/bin/phpunit --testsuite api --filter CoverageFhirApiTest --testdox`, `--filter CoverageFhir` for both classes, `composer phpcs -- tests/Tests/Api/CoverageFhir*ApiTest.php`, and full-codebase PHPStan, all inside the documented development container. The `api-test` helper returned exit 0 even though the baseline reported FAILURES; the after-run used the equivalent underlying PHPUnit command and returned exit 1. The full suite is not claimed green.
+
+#### Was an AI assistant used? Yes / No
+
+Yes. Codex generated the test class and helped trace the fixture behavior; Claude Code assisted with plan/readiness review. The commands and results above were checked locally. Commit trailers record the AI involvement.
+
+
+</details>
 
 **Maintainer Feedback:**
 
-- [Date]: [feedback received, or "none yet"; silence is a normal
-  state and costs you nothing]
-- [Date]: [how you addressed it]
+- 2026-11-03: no human maintainer response or submitted review yet. The initial GitHub check snapshot showed only auto-merge skipped; a green remote CI matrix is not claimed. CONTRIBUTING.md says first-time contributors require maintainer approval before CI runs.
+- Latest monitoring check: [CodeRabbit automated comment](https://github.com/openemr/openemr/pull/15022#issuecomment-6620296648) reports no actionable review comments, but flags docstring coverage (22.22% versus its 80% threshold) and redundant comments. These are bot warnings, not maintainer approval; they remain to assess during Unit 8. The PR is still OPEN and has no submitted reviews.
 
-**Status:** [Awaiting review / Iterating / Merged / Closed. The
-status is a fact you record, never a grade: the PR is graded as
-opened.]
+**Status:** Awaiting review. Verified OPEN, not draft, upstream base master; head MalikSCole:test/fhir-coverage-read; exactly tests/Tests/Api/CoverageFhirApiTest.php changed.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: ship-gate, sourced local manifest, pr-precheck, voice guard, repository hooks and GitHub CLI.
+- What it produced: manual PASS and PR-hook PASS (all three active repo checks and four PR criteria), a clean one-file commit, and upstream PR #15022.
+- Difficulties: staff install did not resolve worktree excludes; full suite had an unrelated baseline failure and a masked exit; Refs does not match the gate's closing-keyword issue inference, so it reran rather than using the manual pass cache.
+- What changed: used the common Git exclude path, explicitly passed the issue URL to manual gate, kept Refs to protect the umbrella, recorded honest failures with matching before/after proof, and let both hooks run without bypass. Working drafts, manifest, memory and evidence stayed local.
 
 ---
 
@@ -432,16 +475,15 @@ opened.]
 
 **Technical Skills Gained**
 
-[What you learned technically, named concretely.]
+I learned to drive PHP API tests through real OAuth, seed/read synthetic FHIR Coverage resources, assert canonical Patient/Organization references, and distinguish a zero-ID fixture from a product behavior defect. I also learned to check exit status against reported test outcomes and verify that staged new files are included in static analysis.
 
 **Challenges Overcome**
 
-[What was hard and how you solved it; point at the real events, the
-Toolkit blocks above are full of them.]
+The documented tools assumed a regular clone in one install step and masked a suite failure in another. Git-resolved exclusions handled the worktree, and underlying PHPUnit preserved the true suite result. A scoped diagnostic and re-graded plan kept the insurer-ID correction test-local instead of widening into product code.
 
 **What I'd Do Differently Next Time**
 
-[Reflection on your process.]
+Establish a readable synthetic fixture, not only a successful write, before settling the test setup. Keep exact public issue URLs in local plans for tooling inference, while retaining non-closing references for umbrella work. Preserve baseline logs before implementation and record deviations before changing the plan.
 
 ---
 
@@ -454,3 +496,5 @@ Toolkit blocks above are full of them.]
 - [Official openemr-cmd](https://github.com/openemr/openemr-devops/tree/master/utilities/openemr-cmd): per-worktree stack and hook commands.
 - [Unit 6 starter](https://github.com/codepath/ai301-unit6-starter): voice guard, wild scopes, scope-feasible and local memory template.
 - [Earlier Ark follow-up](https://github.com/mckinsey/agents-at-scale-ark/issues/2871#issuecomment-6614854554): evidence that redirected issue selection.
+
+- [Opened Coverage GET PR #15022](https://github.com/openemr/openemr/pull/15022): final submitted test-only contribution and disclosed verification.
