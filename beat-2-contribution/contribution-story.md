@@ -54,9 +54,9 @@ one in the week it belongs to.
 
 2026-11-03: I installed ship-gate, verified both hook stops, and wrote a manifest with three sourced must-pass checks plus the dated unrelated full-API baseline failure. Plan-check accepted both the initial plan and its recorded fixture adjustment; the final single-file commit b0b0ca4 passed repository hooks, all active manifest checks, and all four pr-precheck criteria, and [PR #15022](https://github.com/openemr/openemr/pull/15022) was opened upstream (merged on November 4). The main obstacles were the installer's .git-directory assumption, an insurer fixture with ID 0, and a helper returning 0 despite suite failures; I resolved local excludes through Git, normalized only the test insurer, and preserved the real full-suite outcomes without production changes. The manifest kept targeted tests/style/full static analysis decisive while making the existing OAuth failure visible; I used Refs #12343 following prior PRs so the umbrella remains open, and the hook reran fresh because its issue inference does not recognize Refs for the manual-pass cache.
 
-**Unit 8: Monitored the merged PR with a GitHub CLI playbook**
+**Unit 8: Ran the official PR-monitor with a completed playbook on the merged PR**
 
-2026-11-04: I used a GitHub CLI monitoring pass and a local playbook to read the PR state, merge metadata, check conclusions, Codecov report and maintainer comments; this was a manual CLI workflow, not an installed course PR-monitor skill. The playbook checks merged/closed state first, separates human feedback from bot warnings, and drafts a story update instead of a nudge when the PR is merged. It produced the merge/status summary below: Brady Miller merged the PR, Codecov passed, and the insurer fixture behavior was suggested as separate follow-up work. I used that draft to update this story and sent no follow-up message; exact check counts avoided turning skipped/cancelled runs or the local pre-existing API failure into an inaccurate all-green claim.
+2026-11-05: After a manual GitHub CLI check on November 4, I installed the official Unit 8 monitor (starter commit d6dcf459) and completed its four-section playbook, using five outside-contributor PRs to ground a 10-day quiet threshold. From the Coverage feature worktree, I ran `python3 ~/.claude/pr-monitor/monitor.py --state` and then the full command without `--state`; it read PR #15022 as MERGED, 78 passing checks, 3 skipped/cancelled, and four thread entries, then used one Claude call to write run-report.md and drafted-move.md. The draft's MOVE was “No upstream message. Short local close-out only.”; my rules overrode the default merged form's thank-you and issue-closing suggestions because the conversation was finished and #12343 is an umbrella. I reviewed the draft, used it for this local record, and posted nothing; the fixture follow-up stays optional, and the independently checked merge metadata supplies the merger identity that the monitor itself does not gather.
 
 ---
 
@@ -108,7 +108,7 @@ At commit `33050754bd9248137f2eef0db00c4b2d4847c73c` (8.6.0-dev), CoverageFhirWr
 
 2026-11-03: macOS 26.6.2 arm64, Docker Desktop engine 29.4.3, OpenEMR 8.6.0-dev at `33050754bd9248137f2eef0db00c4b2d4847c73c`, PHP 8.5.12, PHPUnit 11.5.57, and MariaDB 12.3.3. My [fork](https://github.com/MalikSCole/openemr) is origin; openemr/openemr is upstream. I created `test/fhir-coverage-read` using `openemr-cmd worktree add ... -b --start`, which manages the sibling worktree and isolated easy Docker stack (offset 1; http://localhost:8301). The database and OAuth readiness checks pass. Container-backed Git hooks are installed; CLAUDE.local.md is ignored through the shared `.git/info/exclude`. The complete public, pinned setup instructions and image digests are embedded below.
 
-Docker was initially stopped and the clone sparse; I started Docker Desktop, fetched the full checkout, installed the official helper, and let first-start setup finish. The helper requires `prek-install` on the host, so I corrected the rejected worktree-exec form. No real patient data is used. The full API/CI matrix has not been run.
+Docker was initially stopped and the clone sparse; I started Docker Desktop, fetched the full checkout, installed the official helper, and let first-start setup finish. The helper requires `prek-install` on the host, so I corrected the rejected worktree-exec form. No real patient data is used. At this Unit 6 baseline stage, the full API/CI matrix had not been run; final local and remote results appear under Testing Strategy and Pull Request.
 
 **Steps to Reproduce**
 
@@ -138,7 +138,7 @@ Docker was initially stopped and the clone sparse; I started Docker Desktop, fet
 
 - **Commit showing reproduction:** [tested source in my fork](https://github.com/MalikSCole/openemr/commit/33050754bd9248137f2eef0db00c4b2d4847c73c). No product/test implementation commit has been made in Unit 6; this coursework story records the commands and observed artifacts.
 - **Screenshots/logs:** baseline exit 0, **3 tests / 55 assertions**. Test listing printed only the three write methods but exited **70** on the project's PHPUnit shutdown-event check; that listing is not counted as a passing test run. Source inspection independently shows write-only HTTP calls. Full output is embedded below; no browser screenshot is claimed.
-- **My findings:** the two Coverage GET routes have a dedicated HTTP test gap at the pinned commit. This is not a reproduced endpoint malfunction, not a line/branch coverage measurement, and not proof about later commits or every runtime combination. No new test or application code has been written.
+- **My findings:** the two Coverage GET routes have a dedicated HTTP test gap at the pinned commit. This is not a reproduced endpoint malfunction, not a line/branch coverage measurement, and not proof about later commits or every runtime combination. No new test or application code had been written at this Unit 6 checkpoint; implementation and merge are recorded below.
 - **Checker result:** full-package repro-check **accept**, all six required checks pass. Its optional upstream-posting polish notes do not change the grade; this report is retained as coursework evidence and has not been posted as another issue comment.
 
 <details>
@@ -514,3 +514,5 @@ Establish a readable synthetic fixture, not only a successful write, before sett
 - [Brady Miller’s follow-up suggestion](https://github.com/openemr/openemr/pull/15022#issuecomment-6623553492): keep the insurer fixture bug as a separate issue/fix.
 - [Prior resource-test PR #12808](https://github.com/openemr/openemr/pull/12808): precedent for a bounded resource slice.
 - [Final Codecov report](https://github.com/openemr/openemr/pull/15022#issuecomment-6622069278): remote coverage evidence with its stated base/head limitation.
+
+- [Official Unit 8 PR-monitor starter](https://github.com/codepath/ai301-unit8-starter/tree/d6dcf459f70934a69a923c72ba844a0c3442b853): installed monitor, move forms and four-section playbook template; state and full runs completed November 5.
