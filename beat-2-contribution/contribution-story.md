@@ -34,19 +34,6 @@ Toolkit points read, and they are the raw material for your unit-9
 portfolio, so keep them current as you work rather than
 reconstructing them later.
 
-A Toolkit block looks like this (copy it into each story section and
-fill it there):
-
-```text
-**Toolkit**
-
-- Tool: [which tool did this phase's work, and how you used it]
-- What it produced: [described in a sentence or a short excerpt]
-- Difficulties: [what fought you or fell short, or "none met"]
-- What changed: [the patch, revision, or workaround, what you would
-  update, or "nothing"]
-```
-
 This section also keeps one short dated entry per week of tool work,
 starting below: what you built or changed that week, what broke, and
 what you changed because of it. The blocks tell the story where it
@@ -65,12 +52,11 @@ one in the week it belongs to.
 
 **Unit 7: Shipped the scoped Coverage GET tests through the manifest and gate**
 
-2026-11-03: I installed ship-gate, verified both hook stops, and wrote a manifest with three sourced must-pass checks plus the dated unrelated full-API baseline failure. Plan-check accepted both the initial plan and its recorded fixture adjustment; the final single-file commit b0b0ca4 passed repository hooks, all active manifest checks, and all four pr-precheck criteria, and [PR #15022](https://github.com/openemr/openemr/pull/15022) is open upstream. The main obstacles were the installer's .git-directory assumption, an insurer fixture with ID 0, and a helper returning 0 despite suite failures; I resolved local excludes through Git, normalized only the test insurer, and preserved the real full-suite outcomes without production changes. The manifest kept targeted tests/style/full static analysis decisive while making the existing OAuth failure visible; I used Refs #12343 following prior PRs so the umbrella remains open, and the hook reran fresh because its issue inference does not recognize Refs for the manual-pass cache.
+2026-11-03: I installed ship-gate, verified both hook stops, and wrote a manifest with three sourced must-pass checks plus the dated unrelated full-API baseline failure. Plan-check accepted both the initial plan and its recorded fixture adjustment; the final single-file commit b0b0ca4 passed repository hooks, all active manifest checks, and all four pr-precheck criteria, and [PR #15022](https://github.com/openemr/openemr/pull/15022) was opened upstream (merged on November 4). The main obstacles were the installer's .git-directory assumption, an insurer fixture with ID 0, and a helper returning 0 despite suite failures; I resolved local excludes through Git, normalized only the test insurer, and preserved the real full-suite outcomes without production changes. The manifest kept targeted tests/style/full static analysis decisive while making the existing OAuth failure visible; I used Refs #12343 following prior PRs so the umbrella remains open, and the hook reran fresh because its issue inference does not recognize Refs for the manual-pass cache.
 
-**Unit 8: [one line on the tool work]**
+**Unit 8: Monitored the merged PR with a GitHub CLI playbook**
 
-[2-4 sentences: the PR-monitor and your playbook. What it read, what it
-drafted, what you did with the draft.]
+2026-11-04: I used a GitHub CLI monitoring pass and a local playbook to read the PR state, merge metadata, check conclusions, Codecov report and maintainer comments; this was a manual CLI workflow, not an installed course PR-monitor skill. The playbook checks merged/closed state first, separates human feedback from bot warnings, and drafts a story update instead of a nudge when the PR is merged. It produced the merge/status summary below: Brady Miller merged the PR, Codecov passed, and the insurer fixture behavior was suggested as separate follow-up work. I used that draft to update this story and sent no follow-up message; exact check counts avoided turning skipped/cancelled runs or the local pre-existing API failure into an inaccurate all-green claim.
 
 ---
 
@@ -406,6 +392,10 @@ Earlier Ark #2871 evidence remains in coursework history through f41ddfa; I post
 
 Added only tests/Tests/Api/CoverageFhirApiTest.php with the planned eight HTTP cases. The first run had three success-case failures while five error/auth cases passed. A temporary diagnostic through the normal PHPUnit safety path showed the insurer helper used ID 0, which the Coverage GET service filters as empty; I updated the plan and story and obtained another six-check accept before applying test-local positive-ID normalization. No controller/service/shared-helper fix was made, and temporary diagnostic files were removed. The final new and combined tests, style and definitive staged-file full PHPStan pass. The full API after-run matches the pre-existing OAuth failure/warning/skips. All applicable repository hooks passed; commit b0b0ca4 contains only the new test class with Generated-By: Codex and Assisted-By: Claude Code trailers. Manual ship-gate and the actual PR hook both passed, and PR #15022 is open against openemr/openemr master from my fork. The hook reran checks instead of honoring the manual stamp because Refs does not match its issue-reference inference; the manual run explicitly supplied the issue URL, and no gate was bypassed.
 
+**2026-11-04 — Merge outcome**
+
+Brady Miller merged PR #15022 into OpenEMR master at 00:39:07 Eastern (05:39:07 UTC), merge commit fe62a8c450a816803724fea37a2f8e6e5ec3044a. He thanked me for the improvement and suggested a separate issue, and potentially a fix, for the insurer fixture behavior. I kept that problem outside the original Coverage-test scope; the follow-up is a separate opportunity and has not been opened as part of this assignment.
+
 **Toolkit**
 
 - Tool: plan-check, managed Docker tests, scoped diagnostics, local ship-gate and repository hooks.
@@ -477,17 +467,19 @@ Yes. I used Codex to help generate the test class and trace the fixture behavior
 
 **Maintainer Feedback:**
 
-- 2026-11-03: no human maintainer response or submitted review yet. The initial GitHub check snapshot showed only auto-merge skipped; a green remote CI matrix is not claimed. CONTRIBUTING.md says first-time contributors require maintainer approval before CI runs.
-- Latest monitoring check: [CodeRabbit automated comment](https://github.com/openemr/openemr/pull/15022#issuecomment-6620296648) reports no actionable review comments, but flags docstring coverage (22.22% versus its 80% threshold) and redundant comments. These are bot warnings, not maintainer approval; they remain to assess during Unit 8. The PR is still OPEN and has no submitted reviews.
+- 2026-11-03: the initial check showed auto-merge skipped and no human feedback yet. CodeRabbit's automated review reported no actionable comments but included docstring-coverage and redundant-comment warnings; these were bot findings, not a maintainer rejection.
+- 2026-11-04: [Brady Miller thanked me for the improvement](https://github.com/openemr/openemr/pull/15022#issuecomment-6623553492) and suggested opening a separate issue, and potentially a fix, for the insurer fixture behavior found during testing. No additional code revision was requested before merge.
+- 2026-11-04: verified MERGED by bradymiller at 05:39:07 UTC (00:39:07 Eastern). The final 81 check entries contain 78 SUCCESS, 2 SKIPPED (auto-merge and Inferno Certification Test), and 1 CANCELLED earlier PR Title run; a later PR Title run and All Checks Passed succeeded. CodeRabbit, codecov/patch and codecov/project checks succeeded.
+- 2026-11-04: [Codecov's report](https://github.com/openemr/openemr/pull/15022#issuecomment-6622069278) says all modified and coverable lines are covered, reports project coverage of 40.21%, and notes its report is one commit behind master. This remote result does not erase the separately documented local OAuth baseline failure.
 
-**Status:** Awaiting review. Verified OPEN, not draft, upstream base master; head MalikSCole:test/fhir-coverage-read; exactly tests/Tests/Api/CoverageFhirApiTest.php changed.
+**Status:** Merged into openemr/openemr master on November 4, 2026. Merge commit: [fe62a8c](https://github.com/openemr/openemr/commit/fe62a8c450a816803724fea37a2f8e6e5ec3044a). The contribution changes only tests/Tests/Api/CoverageFhirApiTest.php; the umbrella issue remains separate.
 
 **Toolkit**
 
 - Tool: ship-gate, sourced local manifest, pr-precheck, voice guard, repository hooks and GitHub CLI.
-- What it produced: manual PASS and PR-hook PASS (all three active repo checks and four PR criteria), a clean one-file commit, and upstream PR #15022.
+- What it produced: manual PASS and PR-hook PASS (all three active repo checks and four PR criteria), a clean one-file commit, and upstream PR #15022, subsequently merged after successful CI and coverage checks.
 - Difficulties: staff install did not resolve worktree excludes; full suite had an unrelated baseline failure and a masked exit; Refs does not match the gate's closing-keyword issue inference, so it reran rather than using the manual pass cache.
-- What changed: used the common Git exclude path, explicitly passed the issue URL to manual gate, kept Refs to protect the umbrella, recorded honest failures with matching before/after proof, and let both hooks run without bypass. Working drafts, manifest, memory and evidence stayed local.
+- What changed: used the common Git exclude path, explicitly passed the issue URL to manual gate, kept Refs to protect the umbrella, recorded honest failures with matching before/after proof, and let both hooks run without bypass. Working drafts, manifest, memory and evidence stayed local. The final monitoring pass recorded merge metadata and the separate fixture follow-up suggestion without sending an unnecessary nudge.
 
 ---
 
@@ -495,7 +487,7 @@ Yes. I used Codex to help generate the test class and trace the fixture behavior
 
 **Technical Skills Gained**
 
-I learned to drive PHP API tests through real OAuth, seed/read synthetic FHIR Coverage resources, assert canonical Patient/Organization references, and distinguish a zero-ID fixture from a product behavior defect. I also learned to check exit status against reported test outcomes and verify that staged new files are included in static analysis.
+I learned to drive PHP API tests through real OAuth, seed/read synthetic FHIR Coverage resources, assert canonical Patient/Organization references, and trace how a zero-ID fixture interacts with the Coverage read path. I also learned to check exit status against reported test outcomes and verify that staged new files are included in static analysis.
 
 **Challenges Overcome**
 
@@ -517,4 +509,8 @@ Establish a readable synthetic fixture, not only a successful write, before sett
 - [Unit 6 starter](https://github.com/codepath/ai301-unit6-starter): voice guard, wild scopes, scope-feasible and local memory template.
 - [Earlier Ark follow-up](https://github.com/mckinsey/agents-at-scale-ark/issues/2871#issuecomment-6614854554): evidence that redirected issue selection.
 
-- [Opened Coverage GET PR #15022](https://github.com/openemr/openemr/pull/15022): final submitted test-only contribution and disclosed verification.
+- [Merged Coverage GET PR #15022](https://github.com/openemr/openemr/pull/15022): final submitted test-only contribution and disclosed verification.
+
+- [Brady Miller’s follow-up suggestion](https://github.com/openemr/openemr/pull/15022#issuecomment-6623553492): keep the insurer fixture bug as a separate issue/fix.
+- [Prior resource-test PR #12808](https://github.com/openemr/openemr/pull/12808): precedent for a bounded resource slice.
+- [Final Codecov report](https://github.com/openemr/openemr/pull/15022#issuecomment-6622069278): remote coverage evidence with its stated base/head limitation.
